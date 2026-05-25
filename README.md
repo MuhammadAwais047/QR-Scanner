@@ -2,14 +2,11 @@
 
 <div align="center">
   <br />
-  <img src="./assets/icon.png" alt="QR Code Scanner Logo" width="120" height="120" />
-  <br />
   <p>
     <strong>A modern, feature-rich QR Code Scanner built with Expo and React Native</strong>
   </p>
   <p>
     <a href="#-features">Features</a> •
-    <a href="#-screenshots">Screenshots</a> •
     <a href="#-getting-started">Getting Started</a> •
     <a href="#-usage">Usage</a> •
     <a href="#-project-structure">Structure</a> •
@@ -32,12 +29,6 @@
 - **📱 Responsive Design** — Adaptive UI that scales beautifully across screen sizes
 - **🔄 Continuous Scan** — Scan again immediately after processing a code
 - **⚡ Haptic Feedback** — Subtle vibrations on successful scans and interactions
-
-## 📸 Screenshots
-
-| Splash Screen | Scanner Screen |
-|:---:|:---:|
-| <img src="./assets/splash-icon.png" width="200" alt="Splash Screen" /> | <img src="./assets/adaptive-icon.png" width="200" alt="Scanner Screen" /> |
 
 ## 🚀 Getting Started
 
