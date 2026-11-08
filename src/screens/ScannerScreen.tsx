@@ -10,6 +10,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { CameraView, useCameraPermissions, BarcodeScanningResult } from 'expo-camera';
+import type { AlertButton } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { Ionicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +20,30 @@ import ScannerOverlay from '../components/ScannerOverlay';
 interface ScannerScreenProps {
   onBackToSplash: () => void;
 }
+
+/**
+ * Accept only absolute http(s) URLs from scanned payloads.
+ * Anything else (javascript:, file:, data:, plain text, missing scheme) is
+ * treated as non-openable content and returned as null.
+ */
+const parseScannableUrl = (payload: string): string | null => {
+  const trimmed = payload.trim();
+  if (!/^https?:\/\//i.test(trimmed)) {
+    return null;
+  }
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      return null;
+    }
+    if (!parsed.hostname) {
+      return null;
+    }
+    return parsed.href;
+  } catch (_) {
+    return null;
+  }
+};
 
 export default function ScannerScreen({ onBackToSplash }: ScannerScreenProps) {
   const [permission, requestPermission] = useCameraPermissions();
@@ -46,35 +71,40 @@ export default function ScannerScreen({ onBackToSplash }: ScannerScreenProps) {
       }
 
       const { data } = result;
+      const scannableUrl = parseScannableUrl(data);
 
+      const buttons: AlertButton[] = [];
+
+      if (scannableUrl) {
+        buttons.push({
+          text: 'Open in Browser',
+          onPress: () => {
+            Linking.openURL(scannableUrl).catch(() => {});
+            resetScanner();
+          },
+        });
+      }
+
+      buttons.push(
+        {
+          text: 'Copy',
+          onPress: () => {
+            Alert.alert('Copied', data);
+            resetScanner();
+          },
+        },
+        {
+          text: 'Scan Again',
+          onPress: () => resetScanner(),
+          style: 'cancel',
+        }
+      );
+
+      // Non-URL payloads are shown as plain text only and are never opened.
       Alert.alert(
         'QR Code Scanned',
-        data,
-        [
-          {
-            text: 'Open in Browser',
-            onPress: () => {
-              if (data.startsWith('http://') || data.startsWith('https://')) {
-                Linking.openURL(data).catch(() => {});
-              } else {
-                Linking.openURL('https://' + data).catch(() => {});
-              }
-              resetScanner();
-            },
-          },
-          {
-            text: 'Copy',
-            onPress: () => {
-              Alert.alert('Copied', data);
-              resetScanner();
-            },
-          },
-          {
-            text: 'Scan Again',
-            onPress: () => resetScanner(),
-            style: 'cancel',
-          },
-        ],
+        scannableUrl ?? data,
+        buttons,
         { cancelable: true, onDismiss: () => resetScanner() }
       );
     },
